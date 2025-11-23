@@ -10,18 +10,17 @@ import {
   FaFileExport,
   FaPen,
 } from "react-icons/fa";
-import { getAuth, updateProfile } from "firebase/auth";
-import { LogOut } from "../../auth/services/LogOut";
 import { useAuth } from "../../auth/services/AuthContext";
+import { LogOut } from "../../auth/services/LogOut";
+import { editProfileService } from "../services/editProfile";
 
 const ProfilePage = () => {
-  const [photoUrl, setPhotoUrl] = useState("");
-  
+  const { user } = useAuth();
   const [updateProfileMode, setUpdateProfileMode] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
-  const { user } = useAuth();
-  const auth = getAuth();
+  const [photoUrl, setPhotoUrl] = useState("");
 
+  // Handle photo selection
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -30,16 +29,13 @@ const ProfilePage = () => {
     }
   };
 
+  // Save updated profile
   const handleSave = async () => {
     try {
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, {
-          displayName: newDisplayName.trim() || auth.currentUser.displayName,
-          photoURL: photoUrl || auth.currentUser.photoURL,
-        });
-      }
+      await editProfileService(newDisplayName, photoUrl);
       setUpdateProfileMode(false);
       setNewDisplayName("");
+      setPhotoUrl("");
       console.log("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -54,6 +50,7 @@ const ProfilePage = () => {
     <div className="bg-[#fefefe] min-h-screen w-full py-10 px-8">
       <h1 className="font-bold text-3xl mb-8">Your Profile</h1>
 
+      {/* Profile Section */}
       <div className="flex justify-between items-center bg-white shadow-lg rounded-xl px-8 py-8 w-full">
         <div className="relative flex items-center gap-6">
           {/* Profile Photo */}
@@ -86,6 +83,7 @@ const ProfilePage = () => {
             )}
           </div>
 
+          {/* Name and Email */}
           <div>
             {updateProfileMode ? (
               <input
@@ -110,15 +108,12 @@ const ProfilePage = () => {
         <div className="flex items-center gap-4">
           {updateProfileMode ? (
             <>
-              {/* Save Button */}
               <button
                 onClick={handleSave}
                 className="bg-green-500 text-white px-4 py-3 rounded-lg shadow hover:bg-green-600 flex items-center gap-2 transition"
               >
                 Save
               </button>
-
-              {/* Cancel Button */}
               <button
                 onClick={() => setUpdateProfileMode(false)}
                 className="bg-gray-300 text-black px-4 py-3 rounded-lg shadow flex items-center gap-2 transition hover:opacity-90"
@@ -135,7 +130,6 @@ const ProfilePage = () => {
             </button>
           )}
 
-          {/* Logout button */}
           <button
             className="bg-[#ea580c] text-white px-6 py-3 rounded-lg shadow hover:bg-[#d94e09] flex items-center gap-2 transition"
             onClick={handleLogOut}
@@ -149,7 +143,6 @@ const ProfilePage = () => {
       {/* Financial Snapshot */}
       <div className="bg-white shadow-lg rounded-xl mt-10 p-8 w-full">
         <h2 className="font-bold text-2xl mb-6">Financial Snapshot</h2>
-
         <div className="bg-[#fff7ed] border-l-4 border-[#ea580c] rounded-xl text-center py-8 mb-10">
           <p className="text-gray-600 text-lg">Total Net Worth</p>
           <h3 className="text-[#ea580c] text-4xl font-bold mt-1">
@@ -157,9 +150,7 @@ const ProfilePage = () => {
           </h3>
         </div>
 
-        {/* Account Info Section */}
         <h2 className="font-bold text-2xl mb-5">Account Information</h2>
-
         {[
           {
             title: "Saving Goals",
@@ -204,7 +195,6 @@ const ProfilePage = () => {
           <FaMedal size={25} className="text-[#ea580c]" />
           Achievements
         </h2>
-
         <div className="flex flex-col gap-4">
           {[1, 2, 3].map((i) => (
             <div
