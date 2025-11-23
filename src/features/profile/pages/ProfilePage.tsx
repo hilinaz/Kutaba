@@ -8,28 +8,46 @@ import {
   FaSignOutAlt,
   FaUserCircle,
   FaFileExport,
-
   FaPen,
 } from "react-icons/fa";
+import { getAuth, updateProfile } from "firebase/auth";
 import { LogOut } from "../../auth/services/LogOut";
 import { useAuth } from "../../auth/services/AuthContext";
 
 const ProfilePage = () => {
   const [photoUrl, setPhotoUrl] = useState("");
-  const [updateProfile, setUpdateProfile] = useState(false);
-  const {user}=useAuth()
+  const [updateProfileMode, setUpdateProfileMode] = useState(false);
+  const [newDisplayName, setNewDisplayName] = useState("");
+  const { user } = useAuth();
+  const auth = getAuth();
 
-const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    const url = URL.createObjectURL(file);
-    setPhotoUrl(url);
-  }
-};
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPhotoUrl(url);
+    }
+  };
 
- const handleLogOut=()=>{
-  LogOut();
- }
+  const handleSave = async () => {
+    try {
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, {
+          displayName: newDisplayName.trim() || auth.currentUser.displayName,
+          photoURL: photoUrl || auth.currentUser.photoURL,
+        });
+      }
+      setUpdateProfileMode(false);
+      setNewDisplayName("");
+      console.log("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+
+  const handleLogOut = () => {
+    LogOut();
+  };
 
   return (
     <div className="bg-[#fefefe] min-h-screen w-full py-10 px-8">
@@ -39,19 +57,22 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         <div className="relative flex items-center gap-6">
           {/* Profile Photo */}
           <div className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center">
-            {photoUrl ? (
-              <img src={photoUrl} className="w-full h-full object-cover" />
+            {photoUrl || user?.photoURL ? (
+              <img
+                src={photoUrl || user?.photoURL || ""}
+                className="w-full h-full object-cover"
+              />
             ) : (
               <FaUserCircle className="text-gray-500 text-7xl" />
             )}
 
-            {updateProfile && (
+            {updateProfileMode && (
               <>
                 <label
                   htmlFor="upload-photo"
                   className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-sm font-medium cursor-pointer"
                 >
-                  <FaPen></FaPen>
+                  <FaPen />
                 </label>
                 <input
                   type="file"
@@ -65,25 +86,32 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
           </div>
 
           <div>
-            <h2 className="font-semibold text-2xl">
-              {user?.displayName || "Full Name"}
-            </h2>
+            {updateProfileMode ? (
+              <input
+                type="text"
+                placeholder={user?.displayName || "Full Name"}
+                value={newDisplayName}
+                onChange={(e) => setNewDisplayName(e.target.value)}
+                className="border-b-2 border-[#ea580c] text-2xl font-semibold outline-none focus:border-green-500"
+              />
+            ) : (
+              <h2 className="font-semibold text-2xl">
+                {user?.displayName || "Full Name"}
+              </h2>
+            )}
             <p className="text-gray-500 text-base">
               {user?.email || "email@example.com"}
             </p>
           </div>
         </div>
 
+        {/* Buttons */}
         <div className="flex items-center gap-4">
-          {updateProfile ? (
+          {updateProfileMode ? (
             <>
               {/* Save Button */}
               <button
-                onClick={() => {
-                  // Save logic here (e.g., upload photo to Firebase)
-                  console.log("Save clicked");
-                  setUpdateProfile(false); // exit edit mode after saving
-                }}
+                onClick={handleSave}
                 className="bg-green-500 text-white px-4 py-3 rounded-lg shadow hover:bg-green-600 flex items-center gap-2 transition"
               >
                 Save
@@ -91,7 +119,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 
               {/* Cancel Button */}
               <button
-                onClick={() => setUpdateProfile(false)}
+                onClick={() => setUpdateProfileMode(false)}
                 className="bg-gray-300 text-black px-4 py-3 rounded-lg shadow flex items-center gap-2 transition hover:opacity-90"
               >
                 Cancel
@@ -99,7 +127,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
             </>
           ) : (
             <button
-              onClick={() => setUpdateProfile(true)}
+              onClick={() => setUpdateProfileMode(true)}
               className="bg-[#ea580c] text-white px-4 py-3 rounded-lg shadow flex items-center gap-2 transition hover:opacity-90"
             >
               <FaPen />
