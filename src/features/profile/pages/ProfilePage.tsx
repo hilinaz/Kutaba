@@ -16,6 +16,7 @@ import { useAuth } from "../../auth/services/AuthContext";
 
 const ProfilePage = () => {
   const [photoUrl, setPhotoUrl] = useState("");
+  
   const [updateProfileMode, setUpdateProfileMode] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const { user } = useAuth();
