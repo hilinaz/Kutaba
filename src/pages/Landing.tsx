@@ -19,7 +19,7 @@ function Landing() {
               src={logo}
               alt="BugIT Logo"
             />
-            <p>BugIT</p>
+            <p>Kutaba</p>
           </div>
 
           <div className="flex gap-4 sm:gap-6 text-white text-lg font-medium mr-6  sm:mr-7">
