@@ -11,6 +11,7 @@ import {
 
   FaPen,
 } from "react-icons/fa";
+import { LogOut } from "../../auth/services/LogOut";
 
 const ProfilePage = () => {
   const [photoUrl, setPhotoUrl] = useState("");
@@ -23,6 +24,10 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhotoUrl(url);
   }
 };
+
+ const handleLogOut=()=>{
+  LogOut();
+ }
 
   return (
     <div className="bg-[#fefefe] min-h-screen w-full py-10 px-8">
@@ -80,7 +85,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
           </button>
 
           {/* Logout button */}
-          <button className="bg-[#ea580c] text-white px-6 py-3 rounded-lg shadow hover:bg-[#d94e09] flex items-center gap-2 transition">
+          <button className="bg-[#ea580c] text-white px-6 py-3 rounded-lg shadow hover:bg-[#d94e09] flex items-center gap-2 transition" onClick={handleLogOut}>
             <FaSignOutAlt />
             Log Out
           </button>
