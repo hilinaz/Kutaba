@@ -35,7 +35,6 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     <div className="bg-[#fefefe] min-h-screen w-full py-10 px-8">
       <h1 className="font-bold text-3xl mb-8">Your Profile</h1>
 
-    
       <div className="flex justify-between items-center bg-white shadow-lg rounded-xl px-8 py-8 w-full">
         <div className="relative flex items-center gap-6">
           {/* Profile Photo */}
@@ -46,7 +45,6 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
               <FaUserCircle className="text-gray-500 text-7xl" />
             )}
 
-         
             {updateProfile && (
               <>
                 <label
@@ -67,27 +65,52 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
           </div>
 
           <div>
-            <h2 className="font-semibold text-2xl">{user?.displayName||'Full Name'}</h2>
-            <p className="text-gray-500 text-base">{user?.email||"email@example.com"}</p>
+            <h2 className="font-semibold text-2xl">
+              {user?.displayName || "Full Name"}
+            </h2>
+            <p className="text-gray-500 text-base">
+              {user?.email || "email@example.com"}
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Edit button */}
-          <button
-            onClick={() => setUpdateProfile((prev) => !prev)}
-            className={`${
-              updateProfile
-                ? "bg-gray-300 text-black"
-                : "bg-[#ea580c] text-white"
-            } px-4 py-3 rounded-lg shadow flex items-center gap-2 transition hover:opacity-90`}
-          >
-        
-            {updateProfile ? "Cancel Edit" : <FaPen/>}
-          </button>
+          {updateProfile ? (
+            <>
+              {/* Save Button */}
+              <button
+                onClick={() => {
+                  // Save logic here (e.g., upload photo to Firebase)
+                  console.log("Save clicked");
+                  setUpdateProfile(false); // exit edit mode after saving
+                }}
+                className="bg-green-500 text-white px-4 py-3 rounded-lg shadow hover:bg-green-600 flex items-center gap-2 transition"
+              >
+                Save
+              </button>
+
+              {/* Cancel Button */}
+              <button
+                onClick={() => setUpdateProfile(false)}
+                className="bg-gray-300 text-black px-4 py-3 rounded-lg shadow flex items-center gap-2 transition hover:opacity-90"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setUpdateProfile(true)}
+              className="bg-[#ea580c] text-white px-4 py-3 rounded-lg shadow flex items-center gap-2 transition hover:opacity-90"
+            >
+              <FaPen />
+            </button>
+          )}
 
           {/* Logout button */}
-          <button className="bg-[#ea580c] text-white px-6 py-3 rounded-lg shadow hover:bg-[#d94e09] flex items-center gap-2 transition" onClick={handleLogOut}>
+          <button
+            className="bg-[#ea580c] text-white px-6 py-3 rounded-lg shadow hover:bg-[#d94e09] flex items-center gap-2 transition"
+            onClick={handleLogOut}
+          >
             <FaSignOutAlt />
             Log Out
           </button>
