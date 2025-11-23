@@ -11,7 +11,7 @@ const MainNav = () => {
     <div className="bg-white shadow-xl p-4 flex justify-between rounded-t-2xl ">
       <div className="items-center flex gap-2">
         <img src={logo} alt="" className="w-10 rounded-full" />
-        <p className="font-bold text-lg">BugIT</p>
+        <p className="font-bold text-lg">Kutaba</p>
       </div>
       <div className="flex gap-4">
         <p className="text-gray">{user.displayName}</p>
