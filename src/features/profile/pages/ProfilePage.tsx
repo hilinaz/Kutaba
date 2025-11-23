@@ -12,10 +12,12 @@ import {
   FaPen,
 } from "react-icons/fa";
 import { LogOut } from "../../auth/services/LogOut";
+import { useAuth } from "../../auth/services/AuthContext";
 
 const ProfilePage = () => {
   const [photoUrl, setPhotoUrl] = useState("");
   const [updateProfile, setUpdateProfile] = useState(false);
+  const {user}=useAuth()
 
 const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
@@ -65,8 +67,8 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
           </div>
 
           <div>
-            <h2 className="font-semibold text-2xl">Full Name</h2>
-            <p className="text-gray-500 text-base">email@example.com</p>
+            <h2 className="font-semibold text-2xl">{user?.displayName||'Full Name'}</h2>
+            <p className="text-gray-500 text-base">{user?.email||"email@example.com"}</p>
           </div>
         </div>
 
