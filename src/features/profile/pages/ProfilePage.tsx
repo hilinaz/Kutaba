@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FaMedal,
   FaPiggyBank,
@@ -10,35 +10,69 @@ import {
   FaFileExport,
   FaPen,
 } from "react-icons/fa";
+
 import { useAuth } from "../../auth/services/AuthContext";
 import { LogOut } from "../../auth/services/LogOut";
 import { editProfileService } from "../services/editProfile";
+import { auth } from "../../../app/firebase";
 
 const ProfilePage = () => {
   const { user } = useAuth();
+
   const [updateProfileMode, setUpdateProfileMode] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
 
-  // Handle photo selection
+  const [photoPreview, setPhotoPreview] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    if (user && !updateProfileMode) {
+      setPhotoPreview(user.photoURL || "");
+      setNewDisplayName(user.displayName || "");
+    }
+  }, [user, updateProfileMode]);
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setPhotoUrl(url);
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+      setImageError(false);
     }
   };
 
-  // Save updated profile
   const handleSave = async () => {
     try {
-      await editProfileService(newDisplayName, photoUrl);
+      setLoading(true);
+
+      await editProfileService(
+        newDisplayName.trim() || user?.displayName || "",
+        photoFile
+      );
+
+      await auth.currentUser?.reload();
+      const freshUser = auth.currentUser;
+
+      if (freshUser) {
+        const timestamp = new Date().getTime();
+        const freshPhotoURL = freshUser.photoURL
+          ? `${freshUser.photoURL}?t=${timestamp}`
+          : "";
+
+        setPhotoPreview(freshPhotoURL);
+        setNewDisplayName(freshUser.displayName || "");
+      }
+
       setUpdateProfileMode(false);
-      setNewDisplayName("");
-      setPhotoUrl("");
-      console.log("Profile updated successfully!");
+      setPhotoFile(null);
+      setImageError(false);
     } catch (error) {
       console.error("Error updating profile:", error);
+      alert("Something went wrong updating your profile.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,15 +84,18 @@ const ProfilePage = () => {
     <div className="bg-[#fefefe] min-h-screen w-full py-10 px-8">
       <h1 className="font-bold text-3xl mb-8">Your Profile</h1>
 
-      {/* Profile Section */}
+      {/* PROFILE HEADER */}
       <div className="flex justify-between items-center bg-white shadow-lg rounded-xl px-8 py-8 w-full">
-        <div className="relative flex items-center gap-6">
-          {/* Profile Photo */}
-          <div className="relative w-24 h-24 rounded-full overflow-hidden flex items-center justify-center">
-            {photoUrl || user?.photoURL ? (
+        <div className="flex items-center gap-6">
+          {/* Profile Picture Section */}
+          <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center border border-gray-200">
+            {photoPreview && !imageError ? (
               <img
-                src={photoUrl || user?.photoURL || ""}
+                key={photoPreview}
+                src={photoPreview}
+                alt="Profile"
                 className="w-full h-full object-cover"
+                onError={() => setImageError(true)}
               />
             ) : (
               <FaUserCircle className="text-gray-500 text-7xl" />
@@ -68,7 +105,8 @@ const ProfilePage = () => {
               <>
                 <label
                   htmlFor="upload-photo"
-                  className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-sm font-medium cursor-pointer"
+                  className="absolute inset-0 bg-black/60 text-white flex items-center justify-center cursor-pointer hover:bg-black/70 transition"
+                  title="Change Photo"
                 >
                   <FaPen />
                 </label>
@@ -83,7 +121,7 @@ const ProfilePage = () => {
             )}
           </div>
 
-          {/* Name and Email */}
+          {/* Name + Email Section */}
           <div>
             {updateProfileMode ? (
               <input
@@ -91,32 +129,44 @@ const ProfilePage = () => {
                 placeholder={user?.displayName || "Full Name"}
                 value={newDisplayName}
                 onChange={(e) => setNewDisplayName(e.target.value)}
-                className="border-b-2 border-[#ea580c] text-2xl font-semibold outline-none focus:border-green-500"
+                className="border-b-2 border-[#ea580c] text-2xl font-semibold outline-none bg-transparent"
               />
             ) : (
               <h2 className="font-semibold text-2xl">
-                {user?.displayName || "Full Name"}
+                {newDisplayName || user?.displayName || "Full Name"}
               </h2>
             )}
+
             <p className="text-gray-500 text-base">
               {user?.email || "email@example.com"}
             </p>
           </div>
         </div>
 
-        {/* Buttons */}
+        {/* Action Buttons */}
         <div className="flex items-center gap-4">
           {updateProfileMode ? (
             <>
               <button
                 onClick={handleSave}
-                className="bg-green-500 text-white px-4 py-3 rounded-lg shadow hover:bg-green-600 flex items-center gap-2 transition"
+                disabled={loading}
+                className={`${
+                  loading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
+                } text-white px-4 py-3 rounded-lg shadow transition`}
               >
-                Save
+                {loading ? "Saving..." : "Save"}
               </button>
+
               <button
-                onClick={() => setUpdateProfileMode(false)}
-                className="bg-gray-300 text-black px-4 py-3 rounded-lg shadow flex items-center gap-2 transition hover:opacity-90"
+                onClick={() => {
+                  setUpdateProfileMode(false);
+                  setPhotoFile(null);
+                  setPhotoPreview(user?.photoURL || "");
+                  setNewDisplayName(user?.displayName || "");
+                  setImageError(false);
+                }}
+                disabled={loading}
+                className="bg-gray-300 px-4 py-3 rounded-lg shadow hover:opacity-90 transition"
               >
                 Cancel
               </button>
@@ -124,15 +174,15 @@ const ProfilePage = () => {
           ) : (
             <button
               onClick={() => setUpdateProfileMode(true)}
-              className="bg-[#ea580c] text-white px-4 py-3 rounded-lg shadow flex items-center gap-2 transition hover:opacity-90"
+              className="bg-[#ea580c] text-white px-4 py-3 rounded-lg shadow hover:opacity-90 transition"
             >
               <FaPen />
             </button>
           )}
 
           <button
-            className="bg-[#ea580c] text-white px-6 py-3 rounded-lg shadow hover:bg-[#d94e09] flex items-center gap-2 transition"
             onClick={handleLogOut}
+            className="bg-[#ea580c] text-white px-6 py-3 rounded-lg shadow hover:bg-[#d94e09] flex items-center gap-2 transition"
           >
             <FaSignOutAlt />
             Log Out
@@ -140,9 +190,10 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Financial Snapshot */}
+      {/* FINANCIAL SNAPSHOT */}
       <div className="bg-white shadow-lg rounded-xl mt-10 p-8 w-full">
         <h2 className="font-bold text-2xl mb-6">Financial Snapshot</h2>
+
         <div className="bg-[#fff7ed] border-l-4 border-[#ea580c] rounded-xl text-center py-8 mb-10">
           <p className="text-gray-600 text-lg">Total Net Worth</p>
           <h3 className="text-[#ea580c] text-4xl font-bold mt-1">
@@ -151,6 +202,7 @@ const ProfilePage = () => {
         </div>
 
         <h2 className="font-bold text-2xl mb-5">Account Information</h2>
+
         {[
           {
             title: "Saving Goals",
@@ -189,12 +241,13 @@ const ProfilePage = () => {
         ))}
       </div>
 
-      {/* Achievements */}
+      {/* ACHIEVEMENTS */}
       <div className="bg-white shadow-lg rounded-xl mt-10 p-8 w-full">
         <h2 className="font-bold text-2xl mb-6 flex items-center gap-3">
           <FaMedal size={25} className="text-[#ea580c]" />
           Achievements
         </h2>
+
         <div className="flex flex-col gap-4">
           {[1, 2, 3].map((i) => (
             <div
@@ -207,7 +260,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Export Section */}
+      {/* EXPORT */}
       <div className="mt-10 w-full">
         <h2 className="font-bold text-2xl mb-5">Data Summary</h2>
         <button className="w-full py-5 border border-gray-300 shadow-md rounded-lg hover:bg-gray-100 transition font-medium flex items-center justify-center gap-2 text-lg">
