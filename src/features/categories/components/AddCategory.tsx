@@ -4,13 +4,9 @@ import { useForm } from "react-hook-form";
 import { saveCategoryService } from "../service/saveCategory";
 import { editCategory } from "../service/editCategory";
 import { useAuth } from "../../auth/services/AuthContext";
+import type { CategoryData } from "../../../types/CategoryData";
 
-type CategoryData = {
-  id?: string;
-  category: string;
-  description: string;
-  icon?: string;
-};
+
 
 type AddCategoryProps = {
   catItem?: CategoryData;
