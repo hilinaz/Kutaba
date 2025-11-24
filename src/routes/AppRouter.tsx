@@ -10,6 +10,7 @@ import CategoriesPage from "../features/categories/pages/CategoriesPage";
 import AccountPage from "../features/account/page/AccountPage";
 import HomePage from "../features/Home/page/HomePage";
 import ProfilePage from "../features/profile/pages/ProfilePage";
+import BudgetPage from "../features/Budget/page/BudgetPage";
 
 
 const AppRouter = () => {
@@ -30,11 +31,12 @@ const AppRouter = () => {
 
         {/* home */}
         <Route element={<MainLayout />}>
-          <Route path="/home" element={<HomePage/>}></Route>
+          <Route path="/home" element={<HomePage />}></Route>
           <Route path="/transactions" element={<TransactionPage />}></Route>
           <Route path="/categories" element={<CategoriesPage />}></Route>
           <Route path="/accounts" element={<AccountPage />}></Route>
-          <Route path="/profile" element={<ProfilePage/>}></Route>
+          <Route path="/profile" element={<ProfilePage />}></Route>
+          <Route path="/budget" element={<BudgetPage />}></Route>
         </Route>
       </Routes>
     </Router>
