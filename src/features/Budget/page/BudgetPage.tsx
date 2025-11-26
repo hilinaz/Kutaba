@@ -1,9 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddMonthlyBudget from "../components/AddBudgetCard";
+import { useAuth } from "../../auth/services/AuthContext";
+import { getMonthsBudgeted } from "../service/GetBudget";
 
 
 const BudgetPage = () => {
   const [showBudgetForm, setShowBudgetForm] = useState(false);
+  const [monthsBudgeted,setMonthsBudgeted]=useState([])
+  const {user}=useAuth()
+
+//  useEffect(()=>{
+//   if (!user)return
+//   const months= await getMonthsBudgeted(user)
+//   console.log(months)
+
+
+//  })
 
   return (
     <div className="bg-[#fefefe] p-3 w-full mr-5">
@@ -17,7 +29,6 @@ const BudgetPage = () => {
         </button>
       </div>
 
-      {/* Placeholder stats if you want */}
       <div className="flex gap-5 mt-5">
         <div className="shadow-xl rounded-xl w-1/3 p-3 border border-gray-300 h-48">
           <p>Total Categories: —</p>
@@ -30,7 +41,6 @@ const BudgetPage = () => {
         </div>
       </div>
 
-      {/* Overlaying AddBudget Form */}
       {showBudgetForm && (
         <AddMonthlyBudget onClose={() => setShowBudgetForm(false)} />
       )}

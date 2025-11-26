@@ -1,32 +1,8 @@
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../../app/firebase";
-
-// Types
-type CategoryType = {
-  id: string;
-  category: string;
-  description?: string;
-  icon?: string;
-};
-
-type AccountType = {
-  id: string;
-  accountName: string;
-  amount?: number;
-  description?: string;
-};
-
-export type TransactionType = {
-  id: string;
-  categoryId: string;
-  transactionType: string;
-  amount: string;
-  accountId: string;
-  description: string;
-  createdAt: Date;
-  categoryName?: string;
-  accountName?: string;
-};
+import type { CategoryData } from "../../../types/CategoryData";
+import type { AccountData } from "../../../types/AccountData";
+import type { TransactionData } from "../components/TransactionTable";
 
 async function getCategoriesOnce(user: any) {
   if (!user) return [];
@@ -34,7 +10,7 @@ async function getCategoriesOnce(user: any) {
     collection(db, "users", user.uid, "categories")
   );
   return snapshot.docs.map(
-    (doc) => ({ id: doc.id, ...doc.data() } as CategoryType)
+    (doc) => ({ id: doc.id, ...doc.data() } as CategoryData)
   );
 }
 
@@ -42,13 +18,13 @@ async function getAccountsOnce(user: any) {
   if (!user) return [];
   const snapshot = await getDocs(collection(db, "users", user.uid, "accounts"));
   return snapshot.docs.map(
-    (doc) => ({ id: doc.id, ...doc.data() } as AccountType)
+    (doc) => ({ id: doc.id, ...doc.data() } as AccountData)
   );
 }
 
 export async function GetAllTransactionService(
   user: any,
-  callback: (transactions: TransactionType[]) => void
+  callback: (transactions: TransactionData[]) => void
 ) {
   if (!user) throw new Error("User not authenticated");
 
@@ -58,7 +34,7 @@ export async function GetAllTransactionService(
   const unsubscribe = onSnapshot(
     collection(db, "users", user.uid, "transactions"),
     (snapshot) => {
-      const transactions: TransactionType[] = snapshot.docs.map((doc) => {
+      const transactions: TransactionData[] = snapshot.docs.map((doc) => {
         const data = doc.data();
 
         return {
