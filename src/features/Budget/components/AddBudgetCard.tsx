@@ -21,7 +21,6 @@ type MonthlyBudget = {
 
 const AddMonthlyBudget = ({ onClose }: { onClose: () => void }) => {
   const { user } = useAuth();
-  const [categories, setCategories] = useState<CategoryData[]>([]);
   const [monthlyBudget, setMonthlyBudget] = useState<MonthlyBudget>({
     month: new Date().toISOString().slice(0, 7),
     categories: [],
@@ -39,7 +38,7 @@ const AddMonthlyBudget = ({ onClose }: { onClose: () => void }) => {
         (doc) => ({ id: doc.id, ...doc.data() } as CategoryData)
       );
 
-      setCategories(catList);
+    
       setMonthlyBudget({
         month: new Date().toISOString().slice(0, 7),
         categories: catList.map((c) => ({
@@ -47,7 +46,7 @@ const AddMonthlyBudget = ({ onClose }: { onClose: () => void }) => {
           categoryName: c.category,
           amount: "",
         })),
-      });
+      }); 
     };
 
     fetchCategories();
