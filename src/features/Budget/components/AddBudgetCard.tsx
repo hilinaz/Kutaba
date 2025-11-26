@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { collection, getDocs, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../app/firebase";
 import { useAuth } from "../../auth/services/AuthContext";
+import { SaveBudget } from "../service/SaveBudget";
 
 type CategoryData = {
   id: string;
@@ -68,22 +69,21 @@ const AddMonthlyBudget = ({ onClose }: { onClose: () => void }) => {
     0
   );
 
-  const handleSaveBudget = async () => {
-    if (!user) return;
+ const handleSaveBudget = async () => {
+   if (!user) return;
 
-    const budgetToSave: MonthlyBudget = {
-      ...monthlyBudget,
-      categories: monthlyBudget.categories.map((cat) => ({
-        ...cat,
-        amount: cat.amount === "" ? 0 : cat.amount,
-      })),
-    };
+   const categoriesToSave = monthlyBudget.categories.map((cat) => ({
+     categoryId:cat.categoryId,
+     amount: cat.amount === "" ? 0 : Number(cat.amount),
+   }));
 
-    const docRef = doc(db, "users", user.uid, "budgets", monthlyBudget.month);
-    await setDoc(docRef, budgetToSave);
-    alert("Monthly budget saved!");
-    onClose();
-  };
+   try {
+     await SaveBudget(user, categoriesToSave);
+     onClose();
+   } catch (error: any) {
+     console.error(error);
+   }
+ };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
